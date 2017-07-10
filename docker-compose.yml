@@ -1,0 +1,59 @@
+version: '2'
+services:
+  master1:
+    container_name: redismoke_master1
+    image: redis:alpine
+    command: redis-server /confs/master1.conf
+    ports:
+      - 6379
+    volumes:
+      - ./confs:/confs
+  master2:
+    container_name: redismoke_master2
+    image: redis:alpine
+    command: redis-server /confs/master2.conf
+    ports:
+      - 6379
+    volumes:
+      - ./confs:/confs
+  slave1:
+    container_name: redismoke_slave1
+    image: redis:alpine
+    command: redis-server /confs/slave1.conf
+    ports:
+      - 6379
+    volumes:
+      - ./confs:/confs
+    depends_on:
+      - master1
+  slave2:
+    container_name: redismoke_slave2
+    image: redis:alpine
+    command: redis-server /confs/slave2.conf
+    ports:
+      - 6379
+    volumes:
+      - ./confs:/confs
+    depends_on:
+      - master1
+  slave3:
+    container_name: redismoke_slave3
+    image: redis:alpine
+    command: redis-server /confs/slave3.conf
+    ports:
+      - 6379
+    volumes:
+      - ./confs:/confs
+    depends_on:
+      - master2
+  redismoke:
+    build: .
+    command: python3 /opt/redismoke/redismoke.py /confs/config.yml
+    volumes:
+      - ./confs:/confs
+    depends_on:
+      - master1
+      - master2
+      - slave1
+      - slave2
+      - slave3

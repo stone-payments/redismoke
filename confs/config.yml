@@ -1,0 +1,23 @@
+masters:
+  - name: "master1"
+    address: "master1"
+    port: 6379
+    pass: "123456"
+    slaves:
+      - name: "slave1"
+        address: "slave1"
+        port: 6379
+      - name: "slave2"
+        address: "slave2"
+        port: 6379
+      - name: "slave3"
+        address: "slave3"
+        port: 6379
+  - name: "master2"
+    address: "master2"
+    port: 6379
+    pass: ""
+    slaves:
+      - name: "slave3"
+        address: "slave3"
+        port: 6379
