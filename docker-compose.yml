@@ -48,7 +48,7 @@ services:
       - master2
   redismoke:
     build: .
-    command: python3 /opt/redismoke/redismoke.py /confs/config.yml
+    command: /confs/config.yml
     volumes:
       - ./confs:/confs
     depends_on:
