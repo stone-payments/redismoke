@@ -3,7 +3,7 @@
 import sys
 import string
 import random
-import datetime
+from datetime import datetime
 from traceback import print_exc
 from time import sleep
 import yaml
@@ -83,7 +83,7 @@ class RedisTest(object):
     """ A test instance with multiple masters and their respectives slaves """
     def __init__(self, conf):
         self.testId = 'testid-' + randomWord(8)
-        self.now = datetime.datetime.now().strftime("%Y%m%d%H%M%S.%N")
+        self.now = datetime.now().strftime("%Y%m%d%H%M%S.%N")
         self.masters = [RedisMaster(master) for master in conf['masters']]
 
     def __failure(self, master, slave=None, reason=None):
