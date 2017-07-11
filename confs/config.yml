@@ -7,12 +7,15 @@ masters:
       - name: "slave1"
         address: "slave1"
         port: 6379
+        pass: "123456"
       - name: "slave2"
         address: "slave2"
         port: 6379
+        pass: "123456"
       - name: "slave3"
         address: "slave3"
         port: 6379
+        pass: "123456"
   - name: "master2"
     address: "master2"
     port: 6379
@@ -21,3 +24,4 @@ masters:
       - name: "slave3"
         address: "slave3"
         port: 6379
+        pass: "123456"
