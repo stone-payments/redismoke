@@ -1,32 +1,32 @@
-pool: 15
+pool: 15 #may be ommited, default=60
 masters:
-  - name: "master1"
+  - name: "master1" #this should be a SUCCESS write
     address: "master1"
     port: 6379
     pass: "123456"
     slaves:
-      - name: "slave1"
+      - name: "slave1" #this should be SUCCESS read
         address: "slave1"
         port: 6379
         pass: "123456"
-      - name: "slave2"
+      - name: "slave2" #this should be FAILURE read because it isn't configured as slave of master1
         address: "slave2"
         port: 6379
         pass: "123456"
-      - name: "slave3"
+      - name: "slave3" #this should be a FAILURE read because a pass is not needed
         address: "slave3"
         port: 6379
         pass: "123456"
-  - name: "master2"
+  - name: "master2a" #this should be a SUCCESS write even without a password
     address: "master2"
     port: 6379
     pass: ""
     slaves:
-      - name: "slave3"
+      - name: "slave3" #this should be a SUCCESS read even without a password
         address: "slave3"
         port: 6379
         pass: ""
-  - name: "master3"
+  - name: "master2b" #this should be a SUCCESS write with minimal config
     address: "master2"
     slaves:
-      - address: "slave3"
+      - address: "slave3" #this should be a SUCCESS read with minimal config, while being listed as Unnamed
