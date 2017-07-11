@@ -26,3 +26,7 @@ masters:
         address: "slave3"
         port: 6379
         pass: ""
+  - name: "master3"
+    address: "master2"
+    slaves:
+      - address: "slave3"

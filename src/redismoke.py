@@ -24,10 +24,10 @@ class NoKeyException(Exception):
 class RedisServer(object):
     """ Generic Redis Server object """
     def __init__(self, conf):
-        self.name = conf['name']
+        self.name = conf['name'] if 'name' in conf and conf['name'] != "" else "Unammed"
         self.address = conf['address']
-        self.port = conf['port']
-        self.password = conf['pass']
+        self.port = conf['port'] if 'port' in conf and conf['port'] != "" else 6379
+        self.password = conf['pass'] if 'pass' in conf else ""
         self.conn = None
 
     def disconnect(self):
@@ -162,6 +162,6 @@ while True:
         test.write()
         test.check()
         test = None
-        sleep(config['pool'])
+        sleep(config['pool'] if 'pool' in config and config['pool'] != "" else 60)
     except (KeyboardInterrupt, SystemExit):
         exit(0)
