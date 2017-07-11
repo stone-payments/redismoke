@@ -76,7 +76,7 @@ class RedisServer(object):
 class RedisMaster(RedisServer):
     """ A Redis Server that also hold slaves """
     def __init__(self, masterConf):
-        RedisServer.__init__(self, masterConf)
+        super().__init__(masterConf)
         self.slaves = [RedisServer(slave) for slave in masterConf['slaves']]
 
 class RedisTest(object):
