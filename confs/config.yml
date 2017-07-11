@@ -1,3 +1,4 @@
+pool: 15
 masters:
   - name: "master1"
     address: "master1"
@@ -24,4 +25,4 @@ masters:
       - name: "slave3"
         address: "slave3"
         port: 6379
-        pass: "123456"
+        pass: ""
