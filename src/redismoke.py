@@ -5,6 +5,7 @@ import string
 import random
 import datetime
 from traceback import print_exc
+from time import sleep
 import yaml
 import redis
 
@@ -18,7 +19,7 @@ class NoKeyException(Exception):
         Exception.__init__(self)
         self.key = key
     def __str__(self):
-        return "Key " + self.key + " doesn't exists."
+        return "Key " + self.key + " not found."
 
 class RedisServer(object):
     """ Generic Redis Server object """
@@ -31,7 +32,7 @@ class RedisServer(object):
 
     def disconnect(self):
         """ Close the connection to the RedisServer """
-        self.conn = None
+        del self.conn
 
     def connect(self):
         """ Open the connection with the RedisServer """
@@ -85,20 +86,31 @@ class RedisTest(object):
         self.now = datetime.datetime.now().strftime("%Y%m%d%H%M%S.%N")
         self.masters = [RedisMaster(master) for master in conf['masters']]
 
-    def failure(self, master, slave=None, reason=None):
+    def __failure(self, master, slave=None, reason=None):
         """ Print a standardized test failure message """
         if slave is None:
             action = "writing to master \"" + master.name + "\""
         else:
-            action = "reading from slave \"" + slave.name + "\" of master " + master.name + "\""
+            action = "reading from slave \"" + slave.name + "\" of master \"" + master.name + "\""
         if reason is not None:
             print("FAILURE[" + self.testId + "]: " + action + ". Reason: " + reason)
         else:
             print("FAILURE[" + self.testId + "]: "  + action + ". Stack trace: ")
             print_exc()
+        sys.stdout.flush()
 
-    def init(self):
-        """ Write in the master a test key to be checked later """
+    def __success(self, master, slave=None):
+        """ Print a standardized test success message """
+        if slave is None:
+            action = "writing to master \"" + master.name + "\"."
+        else:
+            action = "reading from slave \"" + slave.name + "\" of master \"" + master.name + "\"."
+        print("SUCCESS[" + self.testId + "]: " + action)
+        sys.stdout.flush()
+
+
+    def write(self):
+        """ Write in master a test key to be checked later """
         for master in self.masters:
             master.write(key=self.testId, value=self.now)
 
@@ -108,30 +120,34 @@ class RedisTest(object):
             try:
                 value = master.read(key=self.testId)
                 if value != self.now:
-                    self.failure(
+                    self.__failure(
                         master=master,
                         reason="Wrong value."
                     )
-            except NoKeyException:
-                self.failure(
+            except (NoKeyException, redis.exceptions.ResponseError) as exc:
+                self.__failure(
                     master=master,
-                    reason="Key check doesn't exists."
+                    reason=exc.__str__()
                 )
+            else:
+                self.__success(master=master)
             for slave in master.slaves:
                 try:
                     value = slave.read(key=self.testId)
                     if value != self.now:
-                        self.failure(
+                        self.__failure(
                             master=master,
                             slave=slave,
-                            reason="Wrong value."
+                            reason="Key " + self.testId + " has wrong value."
                         )
-                except NoKeyException:
-                    self.failure(
+                except (NoKeyException, redis.exceptions.ResponseError) as exc:
+                    self.__failure(
                         master=master,
                         slave=slave,
-                        reason="Key check doesn't exists."
+                        reason=exc.__str__()
                     )
+                else:
+                    self.__success(master=master, slave=slave)
 
 with open(sys.argv[1], 'r') as stream:
     try:
@@ -139,6 +155,13 @@ with open(sys.argv[1], 'r') as stream:
     except yaml.YAMLError as exc:
         print(exc)
 
-test = RedisTest(config)
-test.init()
-test.check()
+
+while True:
+    try:
+        test = RedisTest(config)
+        test.write()
+        test.check()
+        test = None
+        sleep(config['pool'])
+    except (KeyboardInterrupt, SystemExit):
+        exit(0)
