@@ -1,7 +1,7 @@
 FROM alpine
 
 LABEL   Name="Redismoke" \
-        Version="0.1"
+        Version="1.0.0"
 ENTRYPOINT [ "/usr/bin/python3", "/opt/redismoke/redismoke.py" ]
 CMD [ "/etc/redismoke.yml" ]
 
