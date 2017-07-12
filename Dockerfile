@@ -1,7 +1,6 @@
 FROM alpine
 
-LABEL   Name="Redismoke" \
-        Version="1.0.0"
+LABEL   Name="Redismoke"
 ENTRYPOINT [ "/usr/bin/python3", "/opt/redismoke/redismoke.py" ]
 CMD [ "/etc/redismoke.yml" ]
 
@@ -13,3 +12,4 @@ RUN pip3 install -r requirements.txt
 
 COPY src /opt/redismoke
 
+LABEL   Version=v2.0.0
