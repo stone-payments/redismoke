@@ -60,45 +60,45 @@ class RedisTest(object):
             ok = self._groupOk(master) and ok
         return ok
 
-    class RedisTestMsg(object):
-        def __init__(self, testId, success, action, master, slave=None, reason=None):
-            self.testId = testId
-            self.success = success
-            self.action = action
-            self.master = master
-            self.slave = slave
-            self.reason = reason
+class RedisTestMsg(object):
+    def __init__(self, testId, success, action, master, slave=None, reason=None):
+        self.testId = testId
+        self.success = success
+        self.action = action
+        self.master = master
+        self.slave = slave
+        self.reason = reason
 
-        def _action(self):
-            if self.slave is None:
-                subject = "master \"{}\"".format(self.master.name)
-            else:
-                subject = "slave \"{}\" of master \"{}\"".format(self.slave.name, self.master.name)
+    def _action(self):
+        if self.slave is None:
+            subject = "master \"{}\"".format(self.master.name)
+        else:
+            subject = "slave \"{}\" of master \"{}\"".format(self.slave.name, self.master.name)
 
-            if self.action == 'w':
-                return "writing to {}".format(subject)
-            elif self.action == 'r':
-                return "reading from {}".format(subject)
-            else:
-                return "Unknown"
+        if self.action == 'w':
+            return "writing to {}".format(subject)
+        elif self.action == 'r':
+            return "reading from {}".format(subject)
+        else:
+            return "Unknown"
 
-        def _failure(self):
-            """ Print a standardized test failure message """
-            if self.reason is not None:
-                return "FAILURE[{}]: {}. Reason: {}.".format(self.testId, self._action(), self.reason)
-            else:
-                return "FAILURE[{}]: {}. Stack trace: ".format(self.testId, self._action())
-                ## TODO: Fix this
-                print_exc()
-            sys.stdout.flush()
+    def _failure(self):
+        """ Print a standardized test failure message """
+        if self.reason is not None:
+            return "FAILURE[{}]: {}. Reason: {}.".format(self.testId, self._action(), self.reason)
+        else:
+            return "FAILURE[{}]: {}. Stack trace: ".format(self.testId, self._action())
+            ## TODO: Fix this
+            print_exc()
+        sys.stdout.flush()
 
-        def _success(self, master, slave=None):
-            """ Print a standardized test success message """
-            return "SUCCESS[{}]: {}.".format(self.testId, self._action())
-            sys.stdout.flush()
+    def _success(self, master, slave=None):
+        """ Print a standardized test success message """
+        return "SUCCESS[{}]: {}.".format(self.testId, self._action())
+        sys.stdout.flush()
 
-        def __str__(self):
-            if self.success:
-                return self._success()
-            else:
-                return self._failure()
+    def __str__(self):
+        if self.success:
+            return self._success()
+        else:
+            return self._failure()
