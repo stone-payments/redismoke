@@ -8,19 +8,20 @@ from traceback import print_exc
 from redis import ResponseError
 from RedisServer import RedisMaster, NoKeyException
 
-def randomWord(length):
-    """ Generates a random string with a length of choice """
-    return ''.join(random.choice(string.ascii_lowercase) for i in range(length))
+IDLENGTH = 8
 
+def _genRandomString(length):
+    """ Generates a random string """
+    return ''.join(random.choice(string.ascii_lowercase) for i in range(length))
 
 class RedisTest(object):
     """ A test instance with multiple masters and their respectives slaves """
     def __init__(self, conf):
-        self.testId = 'testid-' + randomWord(8)
+        self.testId = 'test-' + _genRandomString(IDLENGTH)
         self.now = datetime.now().strftime("%Y%m%d%H%M%S.%N")
         self.masters = [RedisMaster(master) for master in conf['masters']]
 
-    def __failure(self, master, slave=None, reason=None):
+    def _failure(self, master, slave=None, reason=None):
         """ Print a standardized test failure message """
         if slave is None:
             action = "writing to master \"" + master.name + "\""
@@ -33,7 +34,7 @@ class RedisTest(object):
             print_exc()
         sys.stdout.flush()
 
-    def __success(self, master, slave=None):
+    def _success(self, master, slave=None):
         """ Print a standardized test success message """
         if slave is None:
             action = "writing to master \"" + master.name + "\"."
@@ -42,43 +43,41 @@ class RedisTest(object):
         print("SUCCESS[" + self.testId + "]: " + action)
         sys.stdout.flush()
 
+    def _serverOk(self, server):
+        """ Returns true if server has the test key corretly set, else false """
+        try:
+            value = server.read(key=self.testId)
+        except (NoKeyException, ResponseError) as exc:
+            return False, exc.__str__()
+        return value == self.now, None
 
-    def write(self):
+    # pylint: disable=R1705
+    def _groupOk(self, master):
+        masterOk, masterReason = self._serverOk(master)
+        groupOk = True
+        if masterOk:
+            self._success(master=master)
+            groupOk = True
+            for slave in master.slaves:
+                slaveOk, slaveReason = self._serverOk(slave)
+                if slaveOk:
+                    self._success(master=master, slave=slave)
+                else:
+                    self._failure(master=master, slave=slave, reason=slaveReason)
+                    groupOk = False
+            return groupOk
+        else:
+            self._failure(master=master, reason=masterReason)
+            return False
+
+    def setup(self):
         """ Write in master a test key to be checked later """
         for master in self.masters:
             master.write(key=self.testId, value=self.now)
 
     def check(self):
         """ Verify that both masters and slaves have the test key """
+        ok = True
         for master in self.masters:
-            try:
-                value = master.read(key=self.testId)
-                if value != self.now:
-                    self.__failure(
-                        master=master,
-                        reason="Wrong value."
-                    )
-            except (NoKeyException, ResponseError) as exc:
-                self.__failure(
-                    master=master,
-                    reason=exc.__str__()
-                )
-            else:
-                self.__success(master=master)
-            for slave in master.slaves:
-                try:
-                    value = slave.read(key=self.testId)
-                    if value != self.now:
-                        self.__failure(
-                            master=master,
-                            slave=slave,
-                            reason="Key " + self.testId + " has wrong value."
-                        )
-                except (NoKeyException, ResponseError) as exc:
-                    self.__failure(
-                        master=master,
-                        slave=slave,
-                        reason=exc.__str__()
-                    )
-                else:
-                    self.__success(master=master, slave=slave)
+            ok = self._groupOk(master) and ok
+        return ok

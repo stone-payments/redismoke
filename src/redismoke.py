@@ -14,7 +14,7 @@ with open(sys.argv[1], 'r') as stream:
 while True:
     try:
         test = RedisTest(config)
-        test.write()
+        test.setup()
         test.check()
         test = None
         sleep(config['pool'] if 'pool' in config and config['pool'] != "" else 60)
