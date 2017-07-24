@@ -3,7 +3,7 @@
 import sys
 from time import sleep
 import yaml
-from RedisTest import RedisTest
+from RedisTest import RedisGroupTest
 
 with open(sys.argv[1], 'r') as stream:
     try:
@@ -13,9 +13,8 @@ with open(sys.argv[1], 'r') as stream:
 
 while True:
     try:
-        test = RedisTest(config)
-        test.setup()
-        test.check()
+        test = RedisGroupTest(config)
+        test.run()
         test = None
         sleep(config['pool'] if 'pool' in config and config['pool'] != "" else 60)
     except (KeyboardInterrupt, SystemExit):

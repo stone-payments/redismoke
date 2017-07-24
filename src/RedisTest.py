@@ -4,7 +4,6 @@ import sys
 import string
 import random
 from datetime import datetime
-from traceback import print_exc
 from redis import ResponseError
 from RedisServer import RedisMaster, NoKeyException
 
@@ -14,60 +13,74 @@ def _genRandomString(length):
     """ Generates a random string """
     return ''.join(random.choice(string.ascii_lowercase) for i in range(length))
 
-class RedisTest(object):
-    """ A test instance with multiple masters and their respectives slaves """
+class RedisGroupTest(object):
+    """ A group of test instances, each with its own Redis master """
     def __init__(self, conf):
+        self.masters = [RedisMaster(master) for master in conf['masters']]
+        self.tests = None
+
+    def run(self):
+        """ Instatiate and run each and every configured test """
+        for master in self.masters:
+            test = RedisTest(master)
+            test.setup()
+            test.check()
+
+class RedisTest(object):
+    """ A test instance with a single master and its respectives slaves """
+    def __init__(self, master):
         self.testId = 'test-' + _genRandomString(IDLENGTH)
         self.now = datetime.now().strftime("%Y%m%d%H%M%S.%N")
-        self.masters = [RedisMaster(master) for master in conf['masters']]
+        self.master = master
+        for slave in master.slaves:
+            slave.master = self.master
+
+    def _replicasOk(self):
+        replicasOk = True
+        for slave in self.master.slaves:
+            slaveOk = self._serverOk(slave)
+            if not slaveOk:
+                replicasOk = False
+            print(RedisTestMsg(self.testId, action='r', server=slave))
+            sys.stdout.flush()
+        return replicasOk
+
+    def _masterOk(self):
+        masterOk = self._serverOk(self.master)
+        print(RedisTestMsg(self.testId, action='r', server=self.master))
+        sys.stdout.flush()
+        return masterOk
 
     def _serverOk(self, server):
-        """ Returns true if server has the test key corretly set, else false """
+        """ Returns true if server has the test key correctly set, else false """
         try:
             value = server.read(key=self.testId)
+            if value == self.now:
+                server.setStatus(ok=True)
+            else:
+                server.setStatus(ok=False, reason="Invalid value")
         except (NoKeyException, ResponseError) as exc:
-            return False, exc.__str__()
-        return value == self.now, None
-
-    # pylint: disable=R1705
-    def _groupOk(self, master):
-        masterOk, masterReason = self._serverOk(master)
-        groupOk = True
-        if masterOk:
-            self._success(master=master)
-            groupOk = True
-            for slave in master.slaves:
-                slaveOk, slaveReason = self._serverOk(slave)
-                if slaveOk:
-                    self._success(master=master, slave=slave)
-                else:
-                    self._failure(master=master, slave=slave, reason=slaveReason)
-                    groupOk = False
-            return groupOk
-        else:
-            self._failure(master=master, reason=masterReason)
+            server.setStatus(ok=False, reason=exc.__str__())
             return False
+        return server.getStatus()[0]
 
     def setup(self):
         """ Write in master a test key to be checked later """
-        for master in self.masters:
-            master.write(key=self.testId, value=self.now)
+        self.master.write(key=self.testId, value=self.now)
 
     def check(self):
-        """ Verify that both masters and slaves have the test key """
-        ok = True
-        for master in self.masters:
-            ok = self._groupOk(master) and ok
-        return ok
+        """ Verify that both master and slaves have the test key """
+        return self._masterOk() and self._replicasOk()
 
 class RedisTestMsg(object):
-    def __init__(self, testId, success, action, master, slave=None, reason=None):
+    """ Informative message of the test result """
+    def __init__(self, testId, action, server):
         self.testId = testId
-        self.success = success
+        self.success = server.getStatus()[0]
+        self.reason = server.getStatus()[1]
         self.action = action
-        self.master = master
-        self.slave = slave
-        self.reason = reason
+        self.master = server.master if server.master != None else server
+        self.slave = server if server.master != None else None
 
     def _action(self):
         if self.slave is None:
@@ -87,15 +100,12 @@ class RedisTestMsg(object):
         if self.reason is not None:
             return "FAILURE[{}]: {}. Reason: {}.".format(self.testId, self._action(), self.reason)
         else:
-            return "FAILURE[{}]: {}. Stack trace: ".format(self.testId, self._action())
-            ## TODO: Fix this
-            print_exc()
+            return "FAILURE[{}]: {}. See stack trace.".format(self.testId, self._action())
         sys.stdout.flush()
 
-    def _success(self, master, slave=None):
+    def _success(self):
         """ Print a standardized test success message """
         return "SUCCESS[{}]: {}.".format(self.testId, self._action())
-        sys.stdout.flush()
 
     def __str__(self):
         if self.success:
