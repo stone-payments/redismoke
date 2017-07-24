@@ -3,7 +3,7 @@ services:
   master1:
     container_name: redismoke_master1
     image: redis:alpine
-    command: redis-server /confs/master1.conf
+    command: /confs/master1.conf
     ports:
       - 6379
     volumes:
@@ -11,7 +11,7 @@ services:
   master2:
     container_name: redismoke_master2
     image: redis:alpine
-    command: redis-server /confs/master2.conf
+    command: /confs/master2.conf
     ports:
       - 6379
     volumes:
@@ -19,7 +19,7 @@ services:
   slave1:
     container_name: redismoke_slave1
     image: redis:alpine
-    command: redis-server /confs/slave1.conf
+    command: /confs/slave1.conf
     ports:
       - 6379
     volumes:
@@ -29,7 +29,7 @@ services:
   slave2:
     container_name: redismoke_slave2
     image: redis:alpine
-    command: redis-server /confs/slave2.conf
+    command: /confs/slave2.conf
     ports:
       - 6379
     volumes:
@@ -39,7 +39,7 @@ services:
   slave3:
     container_name: redismoke_slave3
     image: redis:alpine
-    command: redis-server /confs/slave3.conf
+    command: /confs/slave3.conf
     ports:
       - 6379
     volumes:
