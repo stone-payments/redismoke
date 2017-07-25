@@ -15,25 +15,29 @@ def _genRandomString(length):
 
 class RedisGroupTest(object):
     """ A group of test instances, each with its own Redis master """
-    def __init__(self, conf):
+    def __init__(self, conf, msgClass=None):
         self.masters = [RedisMaster(master) for master in conf['masters']]
         self.tests = None
+        self.msgClass = msgClass
 
     def run(self):
         """ Instatiate and run each and every configured test """
+        runOk = True
         for master in self.masters:
-            test = RedisTest(master)
+            test = RedisTest(master, msgClass=self.msgClass)
             test.setup()
-            test.check()
+            runOk = test.check() and runOk
+        return runOk
 
 class RedisTest(object):
     """ A test instance with a single master and its respectives slaves """
-    def __init__(self, master):
+    def __init__(self, master, msgClass=None):
         self.testId = 'test-' + _genRandomString(IDLENGTH)
         self.now = datetime.now().strftime("%Y%m%d%H%M%S.%N")
         self.master = master
         for slave in master.slaves:
             slave.master = self.master
+        self.msgClass = RedisTestMsgOneline if msgClass is None else msgClass
 
     def _replicasOk(self):
         replicasOk = True
@@ -41,13 +45,13 @@ class RedisTest(object):
             slaveOk = self._serverOk(slave)
             if not slaveOk:
                 replicasOk = False
-            print(RedisTestMsg(self.testId, action='r', server=slave))
+            print(self.msgClass(self.testId, action='r', server=slave))
             sys.stdout.flush()
         return replicasOk
 
     def _masterOk(self):
         masterOk = self._serverOk(self.master)
-        print(RedisTestMsg(self.testId, action='r', server=self.master))
+        print(self.msgClass(self.testId, action='r', server=self.master))
         sys.stdout.flush()
         return masterOk
 
@@ -73,7 +77,7 @@ class RedisTest(object):
         return self._masterOk() and self._replicasOk()
 
 class RedisTestMsg(object):
-    """ Informative message of the test result """
+    """ Abstract class of a Redis test result """
     def __init__(self, testId, action, server):
         self.testId = testId
         self.success = server.getStatus()[0]
@@ -95,13 +99,17 @@ class RedisTestMsg(object):
         else:
             return "Unknown"
 
+    def __str__(self):
+        raise NotImplementedError
+
+class RedisTestMsgOneline(RedisTestMsg):
+    """ Informative message of the test result """
     def _failure(self):
         """ Print a standardized test failure message """
         if self.reason is not None:
             return "FAILURE[{}]: {}. Reason: {}.".format(self.testId, self._action(), self.reason)
         else:
             return "FAILURE[{}]: {}. See stack trace.".format(self.testId, self._action())
-        sys.stdout.flush()
 
     def _success(self):
         """ Print a standardized test success message """
