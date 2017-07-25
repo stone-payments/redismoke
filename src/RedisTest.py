@@ -83,6 +83,7 @@ class RedisTestMsg(object):
         self.success = server.getStatus()[0]
         self.reason = server.getStatus()[1]
         self.action = action
+        self.server = server
         self.master = server.master if server.master != None else server
         self.slave = server if server.master != None else None
 
@@ -93,11 +94,12 @@ class RedisTestMsg(object):
             subject = "slave \"{}\" of master \"{}\"".format(self.slave.name, self.master.name)
 
         if self.action == 'w':
-            return "writing to {}".format(subject)
+            action = "writing to {}".format(subject)
         elif self.action == 'r':
-            return "reading from {}".format(subject)
+            action = "reading from {}".format(subject)
         else:
-            return "Unknown"
+            action = "Unknown"
+        return action
 
     def __str__(self):
         raise NotImplementedError
@@ -106,17 +108,15 @@ class RedisTestMsgOneline(RedisTestMsg):
     """ Informative message of the test result """
     def _failure(self):
         """ Print a standardized test failure message """
-        if self.reason is not None:
-            return "FAILURE[{}]: {}. Reason: {}.".format(self.testId, self._action(), self.reason)
+        if self.reason:
+            msg = "FAILURE[{}]: {}. Reason: {}.".format(self.testId, self._action(), self.reason)
         else:
-            return "FAILURE[{}]: {}. See stack trace.".format(self.testId, self._action())
+            msg = "FAILURE[{}]: {}. See stack trace.".format(self.testId, self._action())
+        return msg
 
     def _success(self):
         """ Print a standardized test success message """
         return "SUCCESS[{}]: {}.".format(self.testId, self._action())
 
     def __str__(self):
-        if self.success:
-            return self._success()
-        else:
-            return self._failure()
+        return self._success() if self.success else self._failure()

@@ -1,21 +1,26 @@
-import sys
+""" Implement the needed code to render Redismoke capable of interacting with Solarwinds """
+
 from RedisTest import RedisTestMsg
 
 class RedisTestMsgSolarwinds(RedisTestMsg):
+    """ Implement a RedisTestMsg interface that Solarwinds is capable of reading """
     def _failure(self):
         """ Print a standardized test failure message """
-        if self.reason is not None:
-            return "FAILURE[{}]: {}. Reason: {}.".format(self.testId, self._action(), self.reason)
+        if self.reason:
+            msg = ("Statistic.{}: {}\n"
+                   "Message.{}: {}").format(
+                       self.server.name,
+                       '0',
+                       self.server.name,
+                       self.reason
+                   )
         else:
-            return "FAILURE[{}]: {}. See stack trace.".format(self.testId, self._action())
-        sys.stdout.flush()
+            msg = "Statistic.{}: {}".format(self.server.name, '0')
+        return msg
 
     def _success(self):
         """ Print a standardized test success message """
-        return "SUCCESS[{}]: {}.".format(self.testId, self._action())
+        return "Statistic.{}: {}".format(self.server.name, '1')
 
     def __str__(self):
-        if self.success:
-            return self._success()
-        else:
-            return self._failure()
+        return self._success() if self.success else self._failure()

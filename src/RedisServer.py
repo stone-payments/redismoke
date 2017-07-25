@@ -12,6 +12,7 @@ class NoKeyException(Exception):
 
 class RedisServer(object):
     """ Generic Redis Server object """
+    # pylint: disable=R0902
     def __init__(self, conf, master=None):
         self.name = conf['name'] if 'name' in conf and conf['name'] != "" else "Unammed"
         self.address = conf['address']
