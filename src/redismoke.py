@@ -19,6 +19,12 @@ parser.add_argument(
     nargs='?',
     help="Config file",
     default='redismoke.yml')
+parser.add_argument(
+    '--wait',
+    dest='wait',
+    nargs='?',
+    help="Wait seconds before running",
+    default=0)
 args = parser.parse_args()
 
 with open(args.config, 'r') as stream:
@@ -26,6 +32,9 @@ with open(args.config, 'r') as stream:
         config = yaml.load(stream)
     except yaml.YAMLError as exc:
         print(exc)
+
+if args.wait is not None:
+    sleep(int(args.wait))
 
 if args.solarwinds is not None:
     try:
