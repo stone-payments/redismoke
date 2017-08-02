@@ -12,12 +12,25 @@ class NoKeyException(Exception):
 
 class RedisServer(object):
     """ Generic Redis Server object """
-    def __init__(self, conf):
+    # pylint: disable=R0902
+    def __init__(self, conf, master=None):
         self.name = conf['name'] if 'name' in conf and conf['name'] != "" else "Unammed"
         self.address = conf['address']
         self.port = conf['port'] if 'port' in conf and conf['port'] != "" else 6379
         self.password = conf['pass'] if 'pass' in conf else ""
         self.conn = None
+        self.ok = None
+        self.reason = None
+        self.master = master
+
+    def setStatus(self, ok, reason=None):
+        """ Set a server test outcome and reason """
+        self.ok = ok
+        self.reason = reason
+
+    def getStatus(self):
+        """ Return a boolean with the test outcome and the reason """
+        return self.ok, self.reason
 
     def disconnect(self):
         """ Close the connection to the RedisServer """

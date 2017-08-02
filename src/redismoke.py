@@ -1,22 +1,45 @@
 """ Redismoke CLI """
 
-import sys
 from time import sleep
+import argparse
 import yaml
-from RedisTest import RedisTest
+from RedisTestSolarwinds import RedisTestMsgSolarwinds
+from RedisTest import RedisGroupTest
 
-with open(sys.argv[1], 'r') as stream:
+parser = argparse.ArgumentParser(description="Test Redis replica sets")
+parser.add_argument(
+    '--solarwinds',
+    dest='solarwinds',
+    action='store_true',
+    help="Solarwinds-compatible output",
+    )
+parser.add_argument(
+    '--config',
+    dest='config',
+    nargs='?',
+    help="Config file",
+    default='redismoke.yml')
+args = parser.parse_args()
+
+with open(args.config, 'r') as stream:
     try:
         config = yaml.load(stream)
     except yaml.YAMLError as exc:
         print(exc)
 
-while True:
+if args.solarwinds is not None:
     try:
-        test = RedisTest(config)
-        test.write()
-        test.check()
-        test = None
-        sleep(config['pool'] if 'pool' in config and config['pool'] != "" else 60)
+        test = RedisGroupTest(config, msgClass=RedisTestMsgSolarwinds)
+        ok = test.run()
+        exit(0 if ok else 3)
     except (KeyboardInterrupt, SystemExit):
-        exit(0)
+        exit(2)
+else:
+    while True:
+        try:
+            test = RedisGroupTest(config)
+            test.run()
+            test = None
+            sleep(config['pool'] if 'pool' in config and config['pool'] != "" else 60)
+        except (KeyboardInterrupt, SystemExit):
+            exit(0)
