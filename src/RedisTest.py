@@ -14,6 +14,7 @@ def _genRandomString(length):
     return ''.join(random.choice(string.ascii_lowercase) for i in range(length))
 
 class RedisGroupTest(object):
+    # pylint: disable=R0903
     """ A group of test instances, each with its own Redis master """
     def __init__(self, conf, msgClass=None):
         self.masters = [RedisMaster(master) for master in conf['masters']]
@@ -85,6 +86,7 @@ class RedisTest(object):
         return self._masterOk() and self._replicasOk()
 
 class RedisTestMsg(object):
+    # pylint: disable=R0903
     """ Abstract class of a Redis test result """
     def __init__(self, testId, action, server):
         self.testId = testId
@@ -113,6 +115,7 @@ class RedisTestMsg(object):
         raise NotImplementedError
 
 class RedisTestMsgOneline(RedisTestMsg):
+    # pylint: disable=R0903
     """ Informative message of the test result """
     def _failure(self):
         """ Print a standardized test failure message """
