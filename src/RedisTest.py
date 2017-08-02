@@ -4,7 +4,7 @@ import sys
 import string
 import random
 from datetime import datetime
-from redis import ResponseError
+from redis import RedisError
 from RedisServer import RedisMaster, NoKeyException
 
 IDLENGTH = 8
@@ -50,7 +50,10 @@ class RedisTest(object):
         return replicasOk
 
     def _masterOk(self):
-        masterOk = self._serverOk(self.master)
+        if self.master.getStatus()[0] is not False:
+            masterOk = self._serverOk(self.master)
+        else:
+            masterOk = False
         print(self.msgClass(self.testId, action='r', server=self.master))
         sys.stdout.flush()
         return masterOk
@@ -63,14 +66,19 @@ class RedisTest(object):
                 server.setStatus(ok=True)
             else:
                 server.setStatus(ok=False, reason="Invalid value")
-        except (NoKeyException, ResponseError) as exc:
+        except (NoKeyException, RedisError) as exc:
             server.setStatus(ok=False, reason=exc.__str__())
             return False
         return server.getStatus()[0]
 
     def setup(self):
         """ Write in master a test key to be checked later """
-        self.master.write(key=self.testId, value=self.now)
+        try:
+            self.master.write(key=self.testId, value=self.now)
+        except RedisError as exc:
+            self.master.setStatus(ok=False, reason=exc.__str__())
+            return False
+        return True
 
     def check(self):
         """ Verify that both master and slaves have the test key """
