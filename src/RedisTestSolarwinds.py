@@ -3,6 +3,7 @@
 from RedisTest import RedisTestMsg
 
 class RedisTestMsgSolarwinds(RedisTestMsg):
+    # pylint: disable=R0903
     """ Implement a RedisTestMsg interface that Solarwinds is capable of reading """
     def _failure(self):
         """ Print a standardized test failure message """

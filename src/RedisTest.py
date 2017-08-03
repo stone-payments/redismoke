@@ -4,7 +4,7 @@ import sys
 import string
 import random
 from datetime import datetime
-from redis import ResponseError
+from redis import RedisError
 from RedisServer import RedisMaster, NoKeyException
 
 IDLENGTH = 8
@@ -14,6 +14,7 @@ def _genRandomString(length):
     return ''.join(random.choice(string.ascii_lowercase) for i in range(length))
 
 class RedisGroupTest(object):
+    # pylint: disable=R0903
     """ A group of test instances, each with its own Redis master """
     def __init__(self, conf, msgClass=None):
         self.masters = [RedisMaster(master) for master in conf['masters']]
@@ -50,7 +51,10 @@ class RedisTest(object):
         return replicasOk
 
     def _masterOk(self):
-        masterOk = self._serverOk(self.master)
+        if self.master.getStatus()[0] is not False:
+            masterOk = self._serverOk(self.master)
+        else:
+            masterOk = False
         print(self.msgClass(self.testId, action='r', server=self.master))
         sys.stdout.flush()
         return masterOk
@@ -63,20 +67,26 @@ class RedisTest(object):
                 server.setStatus(ok=True)
             else:
                 server.setStatus(ok=False, reason="Invalid value")
-        except (NoKeyException, ResponseError) as exc:
+        except (NoKeyException, RedisError) as exc:
             server.setStatus(ok=False, reason=exc.__str__())
             return False
         return server.getStatus()[0]
 
     def setup(self):
         """ Write in master a test key to be checked later """
-        self.master.write(key=self.testId, value=self.now)
+        try:
+            self.master.write(key=self.testId, value=self.now)
+        except RedisError as exc:
+            self.master.setStatus(ok=False, reason=exc.__str__())
+            return False
+        return True
 
     def check(self):
         """ Verify that both master and slaves have the test key """
         return self._masterOk() and self._replicasOk()
 
 class RedisTestMsg(object):
+    # pylint: disable=R0903
     """ Abstract class of a Redis test result """
     def __init__(self, testId, action, server):
         self.testId = testId
@@ -105,6 +115,7 @@ class RedisTestMsg(object):
         raise NotImplementedError
 
 class RedisTestMsgOneline(RedisTestMsg):
+    # pylint: disable=R0903
     """ Informative message of the test result """
     def _failure(self):
         """ Print a standardized test failure message """
