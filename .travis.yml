@@ -1,11 +1,25 @@
 language: python
 python:
-  - "3.3"
-  - "3.4"
-  - "3.5"
-  - "3.6"
+- '3.3'
+- '3.4'
+- '3.5'
+- '3.6'
 install:
-  - "pip install -r requirements.txt"
-  - "pip install -r test-requirements.txt"
+- pip install -r requirements.txt
+- pip install -r test-requirements.txt
 script:
-  - "pylint --rcfile=.pylintrc src/*"
+- pylint --rcfile=.pylintrc src/*
+env:
+  global:
+  - secure: ek1RKELhkQ74dAbCNLTCzqwVQ8sLT40PhUTLyBcL36ve9D7n6wIP8ROXee/Th5J8i7cGKoyHzKUD81l2H8AoYma1p/j7WGyzLa4zcUMM2qZ598OvW/SuwlyhjEANqGGcSVgGAzWloLvFG834DUART4gUVCm8W/svYPOgCWfUVOYlKe8vkt4irzmxskJwL4abmp0vZOhiXSnRr9X+GBWZII9gooOfHPicfZjgBCNGTe1WCPO0uyodb4AeniRbyZsrj3PI6O2d5cCVcY9O3u3eWiw1HzuWJ4W9BvUhuGrwr2hFuGgkTNNRVTe3sJdCmGcOWVfQwjYav9bqI+Ico/Ik3eQAUR0c746ALLJWuI39QWL8Ma8aATVVIpOGB67CjLNvVRSWgraLgzhj3Nfu+3jlBChTEq2Ct4OLcwKTEm5aRGubeoOTk3sqm4tl6POLrgD6WswZVJrPCN9zU7u4/MoSqQ+QsinqkXbNy8KDZ9q4Uo5Xl7ZnsV8YAbRziTUQ2A9obgvqp9C1m5F83sWPhPDSijVhqG9pp7JmVck1Fq8KhLzPqQMOHBhzChSicth8dex04OYnr0WLp79SDA7F1XpntGJ8QjOMfZMeURMOY22+7l1p7A8z8IAVvHzwFSMvU6Lpohmy3SoZHmhSQIXFP5y+L4SQpEyPXVKaOvtxjiGqQMc=
+  - secure: JGmkLg8wGuBVkyA6StwjUmLFnsjZ0+gTcbp6IaFjQSvhzj9Our12BcUSslue3Y4PZ3OvE/Vj5mvjgDUTx689T/423LwEsjRucghsbVPWFsowg9naHu+B0GuxTaZi5QtNLV22iBGqbV0TlTGTNwAcdahXXtPKtfOjFo4vkizrRRSQBeaxLM4GEkzTqnOmv+Z7U3BrL4bcl4YlPGnnR8MxiI6x7PMJnRdOn/mI87Gp9BCnMU+V3dF3nJcMqFUW9QfaZStW6xWnvTHE2JoP8gQFa7b6Ig2UpjZaa8dwe+psei8tmeAINZwVUCW4AY2EcOxxCZJjKYwW2i/lw1DMRXbldC9z8t4h/LLgS3emhRG09QQ+tn0uXkam/zlpipZhjQOWHWmOl+qL6LnukpjLOgkevmHtRNZ0qewufOYrp+CWP6kdwsAXrKbfAgiVHncWymmoRezG1YFPlHe3y1xZbkzHtJERLq5S6AOYm2l6Sd5j/UNxdnZOw6oXTx9sP2yHzCm64+C0MnKKjH2HdeKszf9dgIAM5Y4ERJ1btBP7W6/O18RqfKxKwRLCseQi+tig+RU9Eua3Bqx+neJ/fLv8ztPTEh4s3IqkIe53BwjAFSAKWSxh11y5dJE0m5/u1j4wPFuljEpg1xo+AHoS0AGot4J9u9NnFrnNIlGHSPN6iZlDtRg=
+  - secure: i9ydrI1p3FcW2CWHwgyWsG7KIURXps3revlc/SZMJZT6hvFj0UlIofRyKYtcMLsfCH5UJIQQIOMpOTFC3ZC6BPjre6/la7rt3YZWBALMltRltQ47ayXrN0EmEqptDzyEkFJRZC0gU4ixAn1o2rlKUMcfxnd//Q2xbrqHq6EZF5zSfHC1LQ3nDR/MSQBbh30pJNCxFcDxJsw+K7kN0Ry/HBcNbFavzaCgQ7DaHX69rjp34/3lyei9FxbowN530Nz6sSIjqDey23ku5n6SqG6InWh4wQTznEobGZHs1ghA3PSvHmQPBopBiQKxEcFE2ZwI2uuC7I/FsaNBmcUZf7O6XodvKPCbpYwm2aNhb7KoZWOFaTLr5kE8DLk0pNHCQ/KPjx1U6K2jakhpRGX76YDsXYULoo6iSaiTRIFqv8/yXPym/VL68bfCfnQVaNNIrx0SyR/WS5mLHiBiizyqzgcavavaCT0ixFaMqcW58o3Nrml5OoYahZ3xq5BUP3FpM753uek37c1/e5NEYhMcjDwfT1haHQDWKMqxB5729UL9DigzH05J2mLQlDAiqvLbIXZSPG9/xDsIM1zs6lVVR4OIGu0C3E2lmzRJfzeHfP9yTZ2TYotODaPNo94bmyKFEc/ex5jF/memE2qAtSR3wjFdXpZDc529BHUNfuI6mi+j3es=
+  - COMMIT=${TRAVIS_COMMIT::8}
+  - REPO=bcdonadio/redismoke
+after_success:
+  - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
+  - export TAG=`if [ "$TRAVIS_BRANCH" == "stable" ]; then echo "latest"; else echo $TRAVIS_BRANCH ; fi`
+  - docker build -f Dockerfile -t $REPO:$COMMIT .
+  - docker tag $REPO:$COMMIT $REPO:$TAG
+  - docker tag $REPO:$COMMIT $REPO:travis-$TRAVIS_BUILD_NUMBER
+  - docker push $REPO
