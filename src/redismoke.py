@@ -20,6 +20,7 @@ def main():
         dest='solarwinds',
         action='store_true',
         help="Solarwinds-compatible output",
+        default=False
         )
     parser.add_argument(
         '--config',
@@ -41,10 +42,9 @@ def main():
         except yaml.YAMLError as exc:
             print(exc)
 
-    if args.wait is not None:
-        sleep(int(args.wait))
+    sleep(int(args.wait))
 
-    if args.solarwinds is not None:
+    if args.solarwinds:
         try:
             test = RedisGroupTest(config, msgClass=RedisTestMsgSolarwinds)
             ok = test.run()
