@@ -7,7 +7,7 @@ DEFAULT_DB = 0
 DEFAULT_PORT = 6379
 
 class NoKeyException(Exception):
-    """ Exception raised when the RedisServer key doesn't exists """
+    """ Exception raised when the key doesn't exists """
     def __init__(self, key):
         Exception.__init__(self)
         self.key = key
@@ -67,7 +67,7 @@ class RedisServer(object):
             return bytes.decode(value)
 
     def write(self, key, value):
-        """ Write a value to a key with TTL of KEY_TTL seconds """
+        """ Write a value to a key that will auto-erase itself within DEFAULT_TTL seconds """
         if self.conn is None:
             self.connect()
         self.conn.setex(

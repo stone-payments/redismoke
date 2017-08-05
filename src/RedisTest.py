@@ -56,6 +56,7 @@ class RedisTest(object):
         return self._masterOk() and self._replicasOk()
 
     def _replicasOk(self):
+        """ Test that all replicas contain the correct key and value """
         replicasOk = True
         for slave in self.master.slaves:
             slaveOk = self._serverOk(slave)
@@ -66,6 +67,7 @@ class RedisTest(object):
         return replicasOk
 
     def _masterOk(self):
+        """ Tests that the key that was written on master can be fetched correctly """
         if self.master.getStatus()[0] is not False:
             masterOk = self._serverOk(self.master)
         else:
@@ -100,6 +102,7 @@ class RedisTestMsg(object):
         self.slave = server if server.master != None else None
 
     def _action(self):
+        """ Returns a string describing the action performed """
         if self.slave is None:
             subject = "master \"{}\"".format(self.master.name)
         else:
@@ -114,11 +117,12 @@ class RedisTestMsg(object):
         return action
 
     def __str__(self):
+        """ Returns actual output to be shown according to the desired implementation """
         raise NotImplementedError
 
 class RedisTestMsgOneline(RedisTestMsg):
     # pylint: disable=R0903
-    """ Informative message of the test result """
+    """ Informative message of the test result that is human-readeable and fits one line """
     def _failure(self):
         """ Print a standardized test failure message """
         if self.reason:
@@ -132,4 +136,5 @@ class RedisTestMsgOneline(RedisTestMsg):
         return "SUCCESS[{}]: {}.".format(self.testId, self._action())
 
     def __str__(self):
+        """ Returns a single line with either the success or fail message """
         return self._success() if self.success else self._failure()
