@@ -8,6 +8,8 @@ from redis import RedisError
 from RedisServer import RedisMaster, NoKeyException
 
 IDLENGTH = 8
+TIMEFMT = "%Y%m%d%H%M%S.%N"
+TESTPREFIX = "test-"
 
 def _genRandomString(length):
     """ Generates a random string """
@@ -33,8 +35,8 @@ class RedisGroupTest(object):
 class RedisTest(object):
     """ A test instance with a single master and its respectives slaves """
     def __init__(self, master, msgClass=None):
-        self.testId = 'test-' + _genRandomString(IDLENGTH)
-        self.now = datetime.now().strftime("%Y%m%d%H%M%S.%N")
+        self.testId = TESTPREFIX + _genRandomString(IDLENGTH)
+        self.now = datetime.now().strftime(TIMEFMT)
         self.master = master
         for slave in master.slaves:
             slave.master = self.master

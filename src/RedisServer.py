@@ -2,6 +2,10 @@
 
 import redis
 
+DEFAULT_TTL = 30 #seconds
+DEFAULT_DB = 0
+DEFAULT_PORT = 6379
+
 class NoKeyException(Exception):
     """ Exception raised when the RedisServer key doesn't exists """
     def __init__(self, key):
@@ -16,7 +20,7 @@ class RedisServer(object):
     def __init__(self, conf, master=None):
         self.name = conf.get('name', 'Unnamed')
         self.address = conf.get('address')
-        self.port = conf.get('port', 6379)
+        self.port = conf.get('port', DEFAULT_PORT)
         self.password = conf.get('pass', "")
         self.conn = None
         self.ok = None
@@ -42,14 +46,14 @@ class RedisServer(object):
             self.conn = redis.StrictRedis(
                 host=self.address,
                 port=self.port,
-                db=0
+                db=DEFAULT_DB
             )
         else:
             self.conn = redis.StrictRedis(
                 host=self.address,
                 port=self.port,
                 password=self.password,
-                db=0
+                db=DEFAULT_DB
             )
 
     def read(self, key):
@@ -63,13 +67,13 @@ class RedisServer(object):
             return bytes.decode(value)
 
     def write(self, key, value):
-        """ Write a value to a key with TTL of 30s """
+        """ Write a value to a key with TTL of KEY_TTL seconds """
         if self.conn is None:
             self.connect()
         self.conn.setex(
             name=key,
             value=value,
-            time=30
+            time=DEFAULT_TTL
         )
 
     def __del__(self):

@@ -2,6 +2,9 @@
 
 from RedisTest import RedisTestMsg
 
+SERVICE_DOWN = '0'
+SERVICE_UP = '1'
+
 class RedisTestMsgSolarwinds(RedisTestMsg):
     # pylint: disable=R0903
     """ Implement a RedisTestMsg interface that Solarwinds is capable of reading """
@@ -11,17 +14,17 @@ class RedisTestMsgSolarwinds(RedisTestMsg):
             msg = ("Statistic.{}: {}\n"
                    "Message.{}: {}").format(
                        self.server.name,
-                       '0',
+                       SERVICE_DOWN,
                        self.server.name,
                        self.reason
                    )
         else:
-            msg = "Statistic.{}: {}".format(self.server.name, '0')
+            msg = "Statistic.{}: {}".format(self.server.name, SERVICE_DOWN)
         return msg
 
     def _success(self):
         """ Print a standardized test success message """
-        return "Statistic.{}: {}".format(self.server.name, '1')
+        return "Statistic.{}: {}".format(self.server.name, SERVICE_UP)
 
     def __str__(self):
         return self._success() if self.success else self._failure()
