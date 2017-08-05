@@ -30,7 +30,7 @@ def main():
 
     with open(args.config, 'r') as stream:
         try:
-            config = yaml.load(stream)
+            config = yaml.safe_load(stream)
         except yaml.YAMLError as exc:
             print(exc)
 
