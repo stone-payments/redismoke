@@ -13,6 +13,7 @@ EXIT_CRITICAL = 3
 EXIT_ABORT = 4
 
 def main():
+    """ Parse the arguments, parse the config file and call the tests to run """
     parser = argparse.ArgumentParser(description="Test Redis replica sets")
     parser.add_argument(
         '--solarwinds',
