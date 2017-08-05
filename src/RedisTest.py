@@ -20,7 +20,6 @@ class RedisGroupTest(object):
     """ A group of test instances, each with its own Redis master """
     def __init__(self, conf, msgClass=None):
         self.masters = [RedisMaster(master) for master in conf['masters']]
-        self.tests = None
         self.msgClass = msgClass
 
     def run(self):
