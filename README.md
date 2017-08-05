@@ -3,6 +3,7 @@ Redismoke
 [![Build Status](https://travis-ci.org/stone-payments/redismoke.svg?branch=master)](https://travis-ci.org/stone-payments/redismoke)
 [![Updates](https://pyup.io/repos/github/stone-payments/redismoke/shield.svg)](https://pyup.io/repos/github/stone-payments/redismoke/)
 [![Python 3](https://pyup.io/repos/github/stone-payments/redismoke/python-3-shield.svg)](https://pyup.io/repos/github/stone-payments/redismoke/)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/def82330538944de910c5fc73274b548)](https://www.codacy.com/app/bcdonadio/redismoke)
 
 Simple Python script to test that writes on Redis masters are being correctly propagated to Redis slaves.
 
