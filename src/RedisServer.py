@@ -5,6 +5,7 @@ import redis
 DEFAULT_TTL = 30 #seconds
 DEFAULT_DB = 0
 DEFAULT_PORT = 6379
+DEFAULT_TIMEOUT = 2.0
 
 class NoKeyException(Exception):
     """ Exception raised when the key doesn't exists """
@@ -46,14 +47,16 @@ class RedisServer(object):
             self.conn = redis.StrictRedis(
                 host=self.address,
                 port=self.port,
-                db=DEFAULT_DB
+                db=DEFAULT_DB,
+                socket_timeout=DEFAULT_TIMEOUT
             )
         else:
             self.conn = redis.StrictRedis(
                 host=self.address,
                 port=self.port,
                 password=self.password,
-                db=DEFAULT_DB
+                db=DEFAULT_DB,
+                socket_timeout=DEFAULT_TIMEOUT
             )
 
     def read(self, key):
