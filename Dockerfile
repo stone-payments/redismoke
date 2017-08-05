@@ -1,6 +1,6 @@
-FROM alpine
-
+FROM alpine:3.6
 LABEL   Name="Redismoke"
+LABEL   Maintainer="Bernardo Donadio <bdonadio@stone.com.br>"
 ENTRYPOINT [ "/bin/sh", "/opt/redismoke/docker-entrypoint.sh" ]
 CMD [ "/etc/redismoke.yml" ]
 
