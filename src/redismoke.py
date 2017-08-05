@@ -57,7 +57,7 @@ def main():
                 test = RedisGroupTest(config)
                 test.run()
                 test = None
-                sleep(config['pool'] if 'pool' in config and config['pool'] != "" else 60)
+                sleep(config.get('pool', 60))
             except (KeyboardInterrupt, SystemExit):
                 exit(EXIT_ABORT)
 

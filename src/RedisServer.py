@@ -14,10 +14,10 @@ class RedisServer(object):
     """ Generic Redis Server object """
     # pylint: disable=R0902
     def __init__(self, conf, master=None):
-        self.name = conf['name'] if 'name' in conf and conf['name'] != "" else "Unammed"
-        self.address = conf['address']
-        self.port = conf['port'] if 'port' in conf and conf['port'] != "" else 6379
-        self.password = conf['pass'] if 'pass' in conf else ""
+        self.name = conf.get('name', 'Unnamed')
+        self.address = conf.get('address')
+        self.port = conf.get('port', 6379)
+        self.password = conf.get('pass', "")
         self.conn = None
         self.ok = None
         self.reason = None
