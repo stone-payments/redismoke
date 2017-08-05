@@ -42,6 +42,19 @@ class RedisTest(object):
             slave.master = self.master
         self.msgClass = RedisTestMsgOneline if msgClass is None else msgClass
 
+    def setup(self):
+        """ Write in master a test key to be checked later """
+        try:
+            self.master.write(key=self.testId, value=self.now)
+        except RedisError as exc:
+            self.master.setStatus(ok=False, reason=exc.__str__())
+            return False
+        return True
+
+    def check(self):
+        """ Verify that both master and slaves have the test key """
+        return self._masterOk() and self._replicasOk()
+
     def _replicasOk(self):
         replicasOk = True
         for slave in self.master.slaves:
@@ -73,19 +86,6 @@ class RedisTest(object):
             server.setStatus(ok=False, reason=exc.__str__())
             return False
         return server.getStatus()[0]
-
-    def setup(self):
-        """ Write in master a test key to be checked later """
-        try:
-            self.master.write(key=self.testId, value=self.now)
-        except RedisError as exc:
-            self.master.setStatus(ok=False, reason=exc.__str__())
-            return False
-        return True
-
-    def check(self):
-        """ Verify that both master and slaves have the test key """
-        return self._masterOk() and self._replicasOk()
 
 class RedisTestMsg(object):
     # pylint: disable=R0903
