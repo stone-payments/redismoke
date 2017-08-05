@@ -6,6 +6,12 @@ import yaml
 from RedisTestSolarwinds import RedisTestMsgSolarwinds
 from RedisTest import RedisGroupTest
 
+# Those exit codes are documented in SolarWinds docs, in the following page:
+# http://www.solarwinds.com/documentation/en/flarehelp/sam/content/sam-linux-unix-script-monitor-sw3260.htm
+EXIT_OK = 0
+EXIT_CRITICAL = 3
+EXIT_ABORT = 4
+
 def main():
     parser = argparse.ArgumentParser(description="Test Redis replica sets")
     parser.add_argument(
@@ -41,9 +47,9 @@ def main():
         try:
             test = RedisGroupTest(config, msgClass=RedisTestMsgSolarwinds)
             ok = test.run()
-            exit(0 if ok else 3)
+            exit(EXIT_OK if ok else EXIT_CRITICAL)
         except (KeyboardInterrupt, SystemExit):
-            exit(2)
+            exit(EXIT_ABORT)
     else:
         while True:
             try:
@@ -52,7 +58,7 @@ def main():
                 test = None
                 sleep(config['pool'] if 'pool' in config and config['pool'] != "" else 60)
             except (KeyboardInterrupt, SystemExit):
-                exit(0)
+                exit(EXIT_ABORT)
 
 if __name__ == "__main__":
     main()
