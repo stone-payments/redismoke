@@ -49,7 +49,7 @@ def main():
             test = RedisGroupTest(config, msgClass=RedisTestMsgSolarwinds)
             ok = test.run()
             exit(EXIT_OK if ok else EXIT_CRITICAL)
-        except (KeyboardInterrupt, SystemExit):
+        except (KeyboardInterrupt):
             exit(EXIT_ABORT)
     else:
         while True:
