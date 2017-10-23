@@ -26,7 +26,20 @@ masters:
         address: "slave3"
         port: 6379
         pass: ""
+      - name: "slave99" #this should be a FAILURE to resolve
+        address: "slave99"
+        port: 6379
+        pass: ""
   - name: "master2b" #this should be a SUCCESS write with minimal config
     address: "master2"
     slaves:
       - address: "slave3" #this should be a SUCCESS read with minimal config, while being listed as Unnamed
+  - name: "slave3b"
+    address: "slave3" #this should be a FAILURE to write since it's a slave
+    slaves:
+      - address: "slave4" #this shouldn't even be tested
+  - name: "master2c" #this should be a FAILURE because of connection refused
+    address: "master2"
+    port: 6380
+    slaves:
+      - address: "slave4" #this shouldn't even be tested

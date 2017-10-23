@@ -48,7 +48,7 @@ services:
       - master2
   redismoke:
     build: .
-    command: "--wait 2 --config /confs/config.yml"
+    command: "--wait 2 --config /confs/config.yml --solarwinds"
     volumes:
       - ./confs:/confs
     depends_on:
